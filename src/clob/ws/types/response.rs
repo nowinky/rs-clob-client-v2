@@ -9,6 +9,7 @@ use crate::auth::ApiKey;
 use crate::clob::types::{OrderStatusType, Side, TraderSide};
 use crate::clob::ws::interest::MessageInterest;
 use crate::error::Kind;
+use crate::serde_helpers::StringFromAny;
 use crate::types::{B256, Decimal, U256};
 
 /// Top-level WebSocket message wrapper.
@@ -221,6 +222,38 @@ pub struct NewMarket {
     /// Event message object
     #[serde(default)]
     pub event_message: Option<EventMessage>,
+    /// Event tags/categories
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
+    /// Market condition ID
+    #[serde_as(as = "NoneAsEmptyString")]
+    #[serde(default)]
+    pub condition_id: Option<B256>,
+    /// Whether the market is currently active
+    #[serde(default)]
+    pub active: Option<bool>,
+    /// Token IDs used by CLOB for this market
+    #[serde(default)]
+    pub clob_token_ids: Option<Vec<U256>>,
+    /// Sports market type classification (if applicable)
+    #[serde_as(as = "NoneAsEmptyString")]
+    #[serde(default)]
+    pub sports_market_type: Option<String>,
+    /// Sports line value as sent by the API (supports string/number forms)
+    #[serde_as(as = "Option<StringFromAny>")]
+    #[serde(default)]
+    pub line: Option<String>,
+    /// Sports game start time (if applicable)
+    #[serde_as(as = "NoneAsEmptyString")]
+    #[serde(default)]
+    pub game_start_time: Option<String>,
+    /// Minimum order price tick size for this market
+    #[serde(default)]
+    pub order_price_min_tick_size: Option<Decimal>,
+    /// Display title used when market is in a grouped event
+    #[serde_as(as = "NoneAsEmptyString")]
+    #[serde(default)]
+    pub group_item_title: Option<String>,
     /// Unix timestamp in milliseconds
     #[serde_as(as = "DisplayFromStr")]
     pub timestamp: i64,
@@ -791,6 +824,18 @@ mod tests {
                 "title": "Will NVIDIA (NVDA) close above ___ end of January?",
                 "description": "Market description"
             },
+            "tags": ["stocks"],
+            "condition_id": "0x311d0c4b6671ab54af4970c06fcf58662516f5168997bdda209ec3db5aa6b0c1",
+            "active": true,
+            "clob_token_ids": [
+                "76043073756653678226373981964075571318267289248134717369284518995922789326425",
+                "31690934263385727664202099278545688007799199447969475608906331829650099442770"
+            ],
+            "sports_market_type": "",
+            "line": "",
+            "game_start_time": "",
+            "order_price_min_tick_size": "0.01",
+            "group_item_title": "NVDA above $240",
             "timestamp": "1766790415550",
             "event_type": "new_market"
         }"#;
@@ -809,6 +854,23 @@ mod tests {
                 let event = nm.event_message.unwrap();
                 assert_eq!(event.id, "125819");
                 assert_eq!(event.ticker, "nvda-above-in-january-2026");
+                assert_eq!(
+                    nm.condition_id,
+                    Some(
+                        B256::from_str(
+                            "0x311d0c4b6671ab54af4970c06fcf58662516f5168997bdda209ec3db5aa6b0c1"
+                        )
+                        .unwrap()
+                    )
+                );
+                assert_eq!(nm.active, Some(true));
+                assert_eq!(nm.clob_token_ids.as_ref().map(Vec::len), Some(2));
+                assert_eq!(nm.sports_market_type, None);
+                assert_eq!(nm.line.as_deref(), Some(""));
+                assert_eq!(nm.game_start_time, None);
+                assert_eq!(nm.order_price_min_tick_size, Some(dec!(0.01)));
+                assert_eq!(nm.group_item_title.as_deref(), Some("NVDA above $240"));
+                assert_eq!(nm.tags, Some(vec!["stocks".to_owned()]));
             }
             _ => panic!("Expected NewMarket message"),
         }
@@ -1016,6 +1078,15 @@ mod tests {
             asset_ids: vec![],
             outcomes: vec![],
             event_message: None,
+            tags: None,
+            condition_id: None,
+            active: None,
+            clob_token_ids: None,
+            sports_market_type: None,
+            line: None,
+            game_start_time: None,
+            order_price_min_tick_size: None,
+            group_item_title: None,
             timestamp: 0,
         });
         assert!(matches_interest(&nm, MessageInterest::NEW_MARKET));

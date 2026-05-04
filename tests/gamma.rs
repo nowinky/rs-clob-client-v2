@@ -492,7 +492,14 @@ mod markets {
             then.status(StatusCode::OK).json_body(json!({
                 "id": "42",
                 "question": "Specific Market?",
-                "slug": "specific-market"
+                "slug": "specific-market",
+                "feeSchedule": {
+                    "exponent": 1,
+                    "rate": "0.072",
+                    "rebateRate": "0.2",
+                    "takerOnly": true
+                },
+                "feeType": "crypto_fees_v2"
             }));
         });
 
@@ -501,6 +508,15 @@ mod markets {
 
         assert_eq!(response.id, "42");
         assert_eq!(response.question, Some("Specific Market?".to_owned()));
+        assert_eq!(response.fee_type, Some("crypto_fees_v2".to_owned()));
+        let fee_schedule = response.fee_schedule.as_ref().expect("fee schedule");
+        assert_eq!(fee_schedule.exponent, Some(1));
+        assert_eq!(fee_schedule.rate, Some(rust_decimal::Decimal::new(72, 3)));
+        assert_eq!(
+            fee_schedule.rebate_rate,
+            Some(rust_decimal::Decimal::new(2, 1))
+        );
+        assert_eq!(fee_schedule.taker_only, Some(true));
         mock.assert();
 
         Ok(())

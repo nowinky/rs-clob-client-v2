@@ -336,6 +336,17 @@ pub struct Event {
     pub home_team_name: Option<String>,
 }
 
+/// Fee schedule metadata for a market.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Builder)]
+#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
+pub struct FeeSchedule {
+    pub exponent: Option<i32>,
+    pub rate: Option<Decimal>,
+    pub rebate_rate: Option<Decimal>,
+    pub taker_only: Option<bool>,
+}
+
 /// A prediction market.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Builder)]
@@ -361,6 +372,8 @@ pub struct Market {
     pub y_axis_value: Option<String>,
     pub denomination_token: Option<U256>,
     pub fee: Option<Decimal>,
+    pub fee_schedule: Option<FeeSchedule>,
+    pub fee_type: Option<String>,
     pub image: Option<String>,
     pub icon: Option<String>,
     pub lower_bound: Option<String>,
