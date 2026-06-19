@@ -405,7 +405,14 @@ mod events {
             then.status(StatusCode::OK).json_body(json!({
                 "id": "456",
                 "title": "Specific Event",
-                "slug": "specific-event"
+                "slug": "specific-event",
+                "markets": [
+                    {
+                        "id": "market-1",
+                        "question": "Nested Market?",
+                        "comboStatus": "disabled"
+                    }
+                ]
             }));
         });
 
@@ -414,6 +421,8 @@ mod events {
 
         assert_eq!(response.id, "456");
         assert_eq!(response.title, Some("Specific Event".to_owned()));
+        let markets = response.markets.as_ref().expect("markets");
+        assert_eq!(markets[0].combo_status, Some("disabled".to_owned()));
         mock.assert();
 
         Ok(())

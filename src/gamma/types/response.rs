@@ -497,6 +497,7 @@ pub struct Market {
     pub game_id: Option<String>,
     pub group_item_range: Option<String>,
     pub sports_market_type: Option<String>,
+    pub combo_status: Option<String>,
     pub line: Option<Decimal>,
     pub uma_resolution_statuses: Option<String>,
     pub pending_deployment: Option<bool>,
