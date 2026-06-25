@@ -332,8 +332,7 @@ pub struct Event {
     pub country_name: Option<String>,
     pub color: Option<String>,
     pub cumulative_markets: Option<bool>,
-    pub away_team_name: Option<String>,
-    pub home_team_name: Option<String>,
+    pub teams: Option<Vec<Team>>,
 }
 
 /// Fee schedule metadata for a market.
